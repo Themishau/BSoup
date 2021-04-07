@@ -24,15 +24,22 @@ class Model(Publisher):
     def clearData(self):
         pass
 
-
     async def start_request(self, name):
         await self.set_process(name)
         await self.add_html(self.input_url)
-        await self.check_connection(self.input_url)
+        await self.request_get_html(self.input_url)
+        if await self.check_connection(self.input_url):
+            await self.save_html("save_html")
+        else:
+            print("connection error")
         await self.delete_process()
+
+    async def request_get_html(self, url):
+        await self.analyzer.request_get_html(url)
 
     async def add_html(self, url):
         await self.analyzer.add_html_url(url)
+        print("html added")
 
     async def save_html(self, name):
         if self.input_url is not None:
@@ -41,9 +48,13 @@ class Model(Publisher):
             await self.delete_process()
 
     async def check_connection(self, name):
-        await self.set_process(name)
-        await self.analyzer.request_get_html(self.input_url)
-        await self.delete_process()
+        if self.input_url is not None:
+            await self.set_process(name)
+            status = await self.analyzer.check_result_status(self.input_url)
+            await self.delete_process()
+            return status
+        else:
+            return False
 
     async def set_process(self, task):
         self.processing = task
@@ -76,7 +87,7 @@ class Controller(Subscriber):
 
     def update(self, event, message):
         self.view.write_gui_log("{} start...".format(event))
-        if event == 'prepare_training_data':
+        if event == 'start_request':
             try:
                 self.model.input_url = self.view.main.input_path.get()
             except FileNotFoundError:
@@ -185,7 +196,7 @@ class View(Publisher, Subscriber):
     # 'start_request',
     # 'close_button'
     def start_request(self, event):
-        self.dispatch("prepare_training_data", "prepare_training_data clicked! Notify subscriber!")
+        self.dispatch("start_request", "start_request clicked! Notify subscriber!")
 
     def closeprogram(self, event):
         self.dispatch("close_button", "quit button clicked! Notify subscriber!")
@@ -216,7 +227,7 @@ class Main(tk.Frame):
 
         #entry
         self.input_path = tk.Entry(self.mainFrame, width=80)
-        self.input_path.insert(0, 'Data/')
+        self.input_path.insert(0, 'http://spiegel.de/schlagzeilen')
         self.input_path.grid(row = 1, column = 0, sticky = tk.N, pady = 2, columnspan = 4)
 
         #textfield

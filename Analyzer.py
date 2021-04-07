@@ -38,28 +38,37 @@ class Analyzer:
         plt.tight_layout()
         plt.show()
 
-    def add_html_url(self, url: str):
+    async def add_html_url(self, url: str):
         if url not in self.html_request:
-            self.html_request[url] = None
+            self.html_request[url] = ""
         print(self.html_request)
 
-    def request_get_html(self, url: str):
+    async def request_get_html(self, url: str):
         if url in self.html_request:
             self.html_request[url] = requests.get(url)
+            print(self.html_request[url])
         else:
-            return -1
+            print("url nicht gefunden")
 
-    def check_result_status(self, result):
-        if result.status_code == "200":
+    async def check_result_status(self, url):
+        if url in self.html_request:
+            result = self.html_request.get(url)
             print(result.status_code)
 
-    def save_html(self, url):
+            if str(result.status_code) == "200":
+                return True
+            else:
+                return False
+
+    async def save_html(self, url):
         if url in self.html_request:
-            soup = BeautifulSoup(self.html_request.get("Name").content, "lxml")
+            soup = BeautifulSoup(self.html_request.get(url).content, "lxml")
             now = datetime.now()
             now = now.strftime("%Y_%m_%d_%H_%M_%S")
-            with open("Soups/{}_output.html".format(now), "w") as file:
+            with open("Soups/{}_output.html".format(now), "w", encoding='utf8') as file:
                 file.write(str(soup))
+        else:
+            print("url nicht gefunden")
 
     def read_csv(self, input_path):
         with codecs.open(input_path, "r", "utf-8") as csv_input:
