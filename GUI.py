@@ -225,7 +225,7 @@ class Main(tk.Frame):
 
         #entry
         self.output_path = tk.Entry(self.mainFrame, width=80)
-        self.output_path.insert(0,'E:/OneDrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/Programmieren_Python/algorithmn/Algorithmen/ML/ML_Tests')
+        self.output_path.insert(0,'Soups')
         self.output_path.grid(row = 3, column = 0, sticky = tk.N, pady = 2, columnspan = 4)
 
         #button quit
